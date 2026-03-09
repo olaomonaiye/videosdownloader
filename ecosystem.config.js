@@ -89,7 +89,7 @@ module.exports = {
     {
       name: 'frontend',
       cwd: './frontend',
-      script: 'node_modules/.bin/next',
+      script: '../node_modules/.bin/next',
       args: 'start -p 7600',
       instances: 1,
       exec_mode: 'fork',

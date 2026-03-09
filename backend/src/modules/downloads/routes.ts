@@ -268,7 +268,9 @@ function mapYtdlpError(stderr: string): string {
   const msg = (stderr || '').toLowerCase();
   if (msg.includes('geo') || msg.includes('country')) {
     return 'This video is geo-restricted and cannot be downloaded from your location.';
-  } else if (msg.includes('private') || msg.includes('login') || msg.includes('sign in')) {
+  } else if (msg.includes('rate-limit') || msg.includes('rate limit')) {
+    return 'This platform is temporarily rate-limiting downloads. Please try again in a few minutes.';
+  } else if (msg.includes('private') || msg.includes('login') || msg.includes('sign in') || msg.includes('authentication') || msg.includes('cookies')) {
     return 'This video is private or requires authentication to access.';
   } else if (msg.includes('age') || msg.includes('confirm your age')) {
     return 'This video is age-restricted and cannot be downloaded.';
@@ -524,9 +526,10 @@ export async function downloadRoutes(app: FastifyInstance): Promise<void> {
       } catch {}
 
       if (!reply.raw.headersSent) {
-        reply.code(500).send({
+        const userMessage = mapYtdlpError(err.message || '');
+        reply.code(422).send({
           success: false,
-          error: { message: `Download failed. Please try again.\n\n${CONTACT_LINE}` },
+          error: { message: `${userMessage}\n\n${CONTACT_LINE}`, code: 'DOWNLOAD_FAILED' },
         });
       }
     }

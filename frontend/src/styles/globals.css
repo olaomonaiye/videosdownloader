@@ -1,0 +1,64 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-primary: #2563eb;
+    --brand-dark: #1e293b;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-tertiary: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+  }
+
+  .dark {
+    --brand-primary: #3b82f6;
+    --brand-dark: #f1f5f9;
+    --bg-primary: #000000;    /* TRUE BLACK */
+    --bg-secondary: #0a0a0a;  /* Near black — cards, panels */
+    --bg-tertiary: #141414;   /* Slightly lighter — nav, footer, elevated */
+    --text-primary: #fafafa;
+    --text-secondary: #a1a1aa;
+    --border-color: #1f1f1f;
+    --accent: #3b82f6;
+    --accent-hover: #60a5fa;
+  }
+
+  body {
+    @apply bg-white dark:bg-black text-slate-900 dark:text-zinc-50 antialiased;
+  }
+
+  * { @apply border-slate-200 dark:border-zinc-800; }
+}
+
+@layer utilities {
+  .scroll-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  .scroll-animate.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-6 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 transition-colors hover:bg-slate-50 dark:hover:bg-zinc-900;
+  }
+  .input-field {
+    @apply w-full rounded-lg border border-slate-300 dark:border-zinc-800 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20;
+  }
+  .card {
+    @apply rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-6 shadow-sm transition-shadow hover:shadow-md;
+  }
+}

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" fill="none">
+  <rect width="1200" height="630" fill="#111111"/>
+  <rect x="0" y="0" width="1200" height="6" fill="#2563eb"/>
+  <!-- Logo -->
+  <rect x="520" y="200" width="60" height="60" rx="12" fill="#2563eb"/>
+  <path d="M536 218l13 12-13 12V218z" fill="white"/>
+  <path d="M549 218l13 12-13 12V218z" fill="white" opacity="0.6"/>
+  <!-- Title -->
+  <text x="600" y="320" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="42" font-weight="bold" fill="white">VideoDownloader</text>
+  <!-- Tagline -->
+  <text x="600" y="370" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="#a1a1aa">Download Any Video, Anywhere</text>
+  <!-- Pill badges -->
+  <rect x="380" y="410" width="120" height="36" rx="18" fill="#1e293b"/>
+  <text x="440" y="434" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#94a3b8">1800+ Sites</text>
+  <rect x="540" y="410" width="120" height="36" rx="18" fill="#1e293b"/>
+  <text x="600" y="434" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#94a3b8">100% Free</text>
+  <rect x="700" y="410" width="120" height="36" rx="18" fill="#1e293b"/>
+  <text x="760" y="434" text-anchor="middle" font-family="system-ui, sans-serif" font-size="14" fill="#94a3b8">No Sign-up</text>
+</svg>

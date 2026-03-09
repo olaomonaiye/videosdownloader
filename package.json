@@ -1,0 +1,41 @@
+{
+  "name": "video-downloader-platform",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Enterprise SEO-Driven Multi-Platform Video Downloader powered by yt-dlp",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "install:all": "npm install",
+    "dev": "concurrently -n API,WEB -c blue,green \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "dev:backend": "npm run dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "build:backend": "npm run build -w backend",
+    "build:frontend": "npm run build -w frontend",
+    "start": "pm2 start ecosystem.config.js",
+    "stop": "pm2 stop ecosystem.config.js",
+    "restart": "pm2 restart ecosystem.config.js",
+    "logs": "pm2 logs",
+    "monit": "pm2 monit",
+    "db:migrate": "npm run db:migrate -w backend",
+    "db:migrate:prod": "npm run db:migrate:prod -w backend",
+    "db:seed": "npm run db:seed -w backend",
+    "db:seed-platforms": "npm run db:seed-platforms -w backend",
+    "db:generate": "npm run db:generate -w backend",
+    "db:studio": "npm run db:studio -w backend",
+    "lint": "npm run lint -w backend && npm run lint -w frontend",
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
+    "setup": "npm install && npm run db:generate && npm run db:migrate && npm run db:seed && echo '✅ Setup complete!'"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "prettier": "^3.2.5"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=10.0.0"
+  }
+}

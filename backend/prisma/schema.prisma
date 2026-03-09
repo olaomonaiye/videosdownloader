@@ -1,0 +1,331 @@
+// prisma/schema.prisma
+// Enterprise Video Downloader Platform - Database Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ──────────────────────────────────────────
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  EDITOR
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum PageStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum DownloadStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum SettingType {
+  STRING
+  INTEGER
+  BOOLEAN
+  JSON
+  TEXT
+}
+
+enum EventType {
+  DOWNLOAD_INITIATED
+  DOWNLOAD_COMPLETED
+  DOWNLOAD_FAILED
+  PAGE_VIEW
+  BLOG_READ
+}
+
+enum SitemapType {
+  PAGES
+  CATEGORIES
+  SERVICES
+  BLOG
+  INDEX
+}
+
+// ─── Users (Admin) ──────────────────────────────────
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  displayName  String
+  role         UserRole  @default(EDITOR)
+  avatarUrl    String?
+  lastLoginAt  DateTime?
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  posts          BlogPost[]
+  activityLogs   AdminActivityLog[]
+  settingUpdates GlobalSetting[]    @relation("UpdatedBy")
+
+  @@map("users")
+}
+
+// ─── Platforms ───────────────────────────────────────
+
+model Platform {
+  id               String   @id @default(uuid())
+  name             String
+  slug             String   @unique
+  extractorKey     String   @default("")
+  logoUrl          String?
+  description      String?  @db.Text
+  metaTitle        String?
+  metaDescription  String?
+  faqJson          Json?
+  isActive         Boolean  @default(false)
+  isAutoDiscovered Boolean  @default(false)
+  downloadCount    Int      @default(0)
+  sortOrder        Int      @default(0)
+  supportedFormats Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  downloads       Download[]
+  analyticsEvents AnalyticsEvent[]
+
+  @@index([slug])
+  @@index([isActive])
+  @@index([downloadCount(sort: Desc)])
+  @@map("platforms")
+}
+
+// ─── Downloads ───────────────────────────────────────
+
+model Download {
+  id              String         @id @default(uuid())
+  platformId      String?
+  url             String
+  title           String?
+  format          String?
+  status          DownloadStatus @default(PENDING)
+  errorMessage    String?
+  ipHash          String
+  userAgent       String?
+  country         String?
+  processingTimeMs Int?
+  fileSize        BigInt?
+  createdAt       DateTime       @default(now())
+  completedAt     DateTime?
+
+  platform Platform? @relation(fields: [platformId], references: [id], onDelete: SetNull)
+
+  @@index([platformId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([ipHash])
+  @@map("downloads")
+}
+
+// ─── Blog Posts ──────────────────────────────────────
+
+model BlogPost {
+  id                 String     @id @default(uuid())
+  title              String
+  slug               String     @unique
+  excerpt            String?    @db.Text
+  content            String     @db.Text
+  thumbnailUrl       String?
+  authorId           String
+  status             PostStatus @default(DRAFT)
+  publishedAt        DateTime?
+  metaTitle          String?
+  metaDescription    String?
+  canonicalUrl       String?
+  readingTimeMinutes Int        @default(0)
+  viewCount          Int        @default(0)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  deletedAt          DateTime?
+
+  author     User           @relation(fields: [authorId], references: [id])
+  categories PostCategory[]
+  tags       PostTag[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([publishedAt(sort: Desc)])
+  @@index([authorId])
+  @@map("blog_posts")
+}
+
+// ─── Categories ──────────────────────────────────────
+
+model Category {
+  id              String   @id @default(uuid())
+  name            String
+  slug            String   @unique
+  description     String?  @db.Text
+  metaTitle       String?
+  metaDescription String?
+  parentId        String?
+  sortOrder       Int      @default(0)
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryHierarchy")
+
+  posts PostCategory[]
+
+  @@index([slug])
+  @@index([parentId])
+  @@map("categories")
+}
+
+// ─── Tags ────────────────────────────────────────────
+
+model Tag {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  posts PostTag[]
+
+  @@index([slug])
+  @@map("tags")
+}
+
+// ─── PostCategories (Pivot) ──────────────────────────
+
+model PostCategory {
+  postId     String
+  categoryId String
+
+  post     BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([postId, categoryId])
+  @@map("post_categories")
+}
+
+// ─── PostTags (Pivot) ────────────────────────────────
+
+model PostTag {
+  postId String
+  tagId  String
+
+  post BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag  Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("post_tags")
+}
+
+// ─── Static Pages ────────────────────────────────────
+
+model StaticPage {
+  id              String     @id @default(uuid())
+  title           String
+  slug            String     @unique
+  content         String     @db.Text
+  metaTitle       String?
+  metaDescription String?
+  ogImageUrl      String?
+  status          PageStatus @default(DRAFT)
+  showInFooter    Boolean    @default(false)
+  showInHeader    Boolean    @default(false)
+  sortOrder       Int        @default(0)
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+  deletedAt       DateTime?
+
+  @@index([slug])
+  @@index([status])
+  @@map("static_pages")
+}
+
+// ─── Global Settings ─────────────────────────────────
+
+model GlobalSetting {
+  id          String      @id @default(uuid())
+  key         String      @unique
+  value       String      @db.Text
+  type        SettingType @default(STRING)
+  group       String      @default("general")
+  description String?
+  isPublic    Boolean     @default(false)
+  updatedAt   DateTime    @updatedAt
+  updatedById String?
+
+  updatedBy User? @relation("UpdatedBy", fields: [updatedById], references: [id], onDelete: SetNull)
+
+  @@index([key])
+  @@index([group])
+  @@index([isPublic])
+  @@map("global_settings")
+}
+
+// ─── Analytics Events ────────────────────────────────
+
+model AnalyticsEvent {
+  id         String    @id @default(uuid())
+  eventType  EventType
+  platformId String?
+  metadata   Json?
+  ipHash     String
+  userAgent  String?
+  country    String?
+  createdAt  DateTime  @default(now())
+
+  platform Platform? @relation(fields: [platformId], references: [id], onDelete: SetNull)
+
+  @@index([eventType])
+  @@index([platformId])
+  @@index([createdAt])
+  @@map("analytics_events")
+}
+
+// ─── Admin Activity Logs ─────────────────────────────
+
+model AdminActivityLog {
+  id         String   @id @default(uuid())
+  userId     String
+  action     String
+  entityType String?
+  entityId   String?
+  details    Json?
+  ipAddress  String
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("admin_activity_logs")
+}
+
+// ─── Sitemap Cache ───────────────────────────────────
+
+model SitemapCache {
+  id              String      @id @default(uuid())
+  type            SitemapType @unique
+  content         String      @db.Text
+  lastGeneratedAt DateTime    @default(now())
+  triggerEvent    String?
+
+  @@map("sitemap_cache")
+}

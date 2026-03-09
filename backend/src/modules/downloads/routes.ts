@@ -391,7 +391,7 @@ export async function downloadRoutes(app: FastifyInstance): Promise<void> {
       const mergeFlag = needsMerge ? '1' : '0';
       const typeFlag = formatType || 'video';
       const streamUrl = `/api/v1/downloads/stream?url=${encodeURIComponent(url)}&format=${encodeURIComponent(format || 'best')}&title=${encodeURIComponent(title)}&needsMerge=${mergeFlag}&type=${typeFlag}`;
-      const backendUrl = `http://localhost:${env.API_PORT}`;
+      const backendUrl = env.NODE_ENV === 'production' ? env.SITE_URL : `http://localhost:${env.API_PORT}`;
       sendSuccess(reply, {
         downloadUrl: `${backendUrl}${streamUrl}`,
         title,

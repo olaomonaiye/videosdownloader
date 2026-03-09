@@ -201,7 +201,7 @@ const worker = new Worker(
     throw new Error(`Unknown job type: ${job.name}`);
   },
   {
-    connection: redis,
+    connection: redis as any,
     concurrency: CONCURRENCY,
     limiter: {
       max: 10,
